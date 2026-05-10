@@ -1,0 +1,115 @@
+\documentclass{beamer}
+\usetheme{Madrid}
+\usepackage{amsmath, amssymb, listings, xcolor}
+
+\title{Understanding Pipelining Hazards}
+\subtitle{BLG 483E -- Artificial Intelligence}
+\author{salihsefer36}
+\date{\today}
+
+\begin{document}
+
+% --- Slide 1: Title ---
+\begin{frame}
+  \titlepage
+\end{frame}
+
+% --- Slide 2: Introduction to CPU Pipelining ---
+\begin{frame}{Introduction to CPU Pipelining}
+  \begin{itemize}
+    \item Instruction-level parallelism (ILP) is exploited via pipelining.
+    \item A pipeline divides instruction execution into $k$ discrete stages:
+          IF, ID, EX, MEM, WB.
+    \item Throughput approaches 1 instruction per clock cycle (IPC $\approx$ 1)
+          under ideal conditions.
+    \item Hazards are structural, temporal, or data-flow conflicts that prevent
+          the pipeline from advancing at every clock edge.
+    \item Hazard penalties manifest as pipeline stalls (bubbles) or incorrect
+          architectural state.
+  \end{itemize}
+\end{frame}
+
+% --- Slide 3: Data Hazards ---
+\begin{frame}{Data Hazards}
+  \begin{itemize}
+    \item Data hazards arise from read-after-write (RAW), write-after-read (WAR),
+          and write-after-write (WAW) dependences between instructions.
+    \item RAW (true dependence): a consumer instruction attempts to read a
+          register operand before the producer instruction completes its WB stage.
+    \item WAR (anti-dependence): a later instruction writes a destination before
+          a prior instruction finishes reading the same register.
+    \item WAW (output dependence): two instructions write the same architectural
+          register; the second write must dominate the first in program order.
+    \item Detection requires a hazard detection unit that monitors the ID/EX,
+          EX/MEM, and MEM/WB pipeline registers on every cycle.
+    \item Mitigation: stall insertion (pipeline interlock) or operand forwarding
+          (bypassing) from EX/MEM or MEM/WB to the EX stage ALU inputs.
+  \end{itemize}
+\end{frame}
+
+% --- Slide 4: Structural Hazards ---
+\begin{frame}{Structural Hazards}
+  \begin{itemize}
+    \item Structural hazards occur when multiple instructions simultaneously
+          require the same hardware resource.
+    \item Classic example: a unified memory with no instruction/data cache
+          separation forces a stall when MEM and IF stages both require access.
+    \item Register-file write-port conflicts arise when two instructions attempt
+          to write-back concurrently in single-port implementations.
+    \item In floating-point pipelines, multi-cycle functional units (dividers,
+          square-root units) can create write-back contention.
+    \item Resolution strategies: resource duplication, resource time-sharing,
+          or pipeline stage reordering with compiler scheduling.
+  \end{itemize}
+\end{frame}
+
+% --- Slide 5: Control Hazards ---
+\begin{frame}{Control Hazards}
+  \begin{itemize}
+    \item Control hazards (branch hazards) arise because branch outcome and
+          target address are resolved late in the pipeline (EX or MEM stage).
+    \item In a 5-stage pipeline, a taken branch incurs a 2-cycle penalty if
+          no mitigation is applied (instructions at IF and ID must be flushed).
+    \item Static prediction strategies: predict-not-taken, predict-taken,
+          BTFN (backward-taken, forward-not-taken).
+    \item Dynamic prediction: 1-bit and 2-bit saturating counters in a Branch
+          Prediction Buffer (BPB) indexed by the lower bits of the PC.
+    \item Branch Target Buffer (BTB) stores predicted target addresses to
+          eliminate target-address computation latency.
+    \item Delayed branching exposes one branch delay slot filled by the compiler
+          with a useful instruction or a \texttt{NOP}.
+  \end{itemize}
+\end{frame}
+
+% --- Slide 6: Hazard Mitigation Summary ---
+\begin{frame}{Hazard Mitigation Summary}
+  \begin{itemize}
+    \item \textbf{Stall (interlock):} The hazard detection unit asserts a stall
+          signal, holding PC and IF/ID registers constant while inserting a bubble
+          (NOP) into the ID/EX register.
+    \item \textbf{Forwarding (bypassing):} Multiplexers route the result from the
+          EX/MEM or MEM/WB register directly to the ALU input, reducing RAW stalls
+          from 2 cycles to 0 for most cases.
+    \item \textbf{Load-use hazard:} A load followed immediately by a dependent
+          instruction cannot be fully resolved by forwarding alone; one stall cycle
+          remains unavoidable without out-of-order execution.
+    \item \textbf{Branch delay slots:} RISC ISAs (MIPS, SPARC) expose one slot
+          post-branch; the instruction in this slot always executes.
+    \item \textbf{Compiler scheduling:} Static reordering eliminates hazards at
+          compile time by inserting independent instructions between dependent pairs.
+  \end{itemize}
+\end{frame}
+
+% --- Slide 7: References ---
+\begin{frame}{References}
+  \begin{thebibliography}{9}
+    \bibitem{patterson} Patterson, D.\,A. and Hennessy, J.\,L.
+      \textit{Computer Organization and Design: The Hardware/Software Interface},
+      5th ed. Morgan Kaufmann, 2014.
+    \bibitem{hennessy} Hennessy, J.\,L. and Patterson, D.\,A.
+      \textit{Computer Architecture: A Quantitative Approach},
+      6th ed. Morgan Kaufmann, 2017.
+  \end{thebibliography}
+\end{frame}
+
+\end{document}
