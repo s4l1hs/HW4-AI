@@ -1,0 +1,5 @@
+\beamer@sectionintoc {1}{What is Pipelining?}{4}{0}{1}
+\beamer@sectionintoc {2}{Data Hazards}{6}{0}{2}
+\beamer@sectionintoc {3}{Structural \& Control Hazards}{9}{0}{3}
+\beamer@sectionintoc {4}{Mitigation Techniques}{11}{0}{4}
+\beamer@sectionintoc {5}{Summary}{12}{0}{5}
